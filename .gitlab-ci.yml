@@ -1,0 +1,84 @@
+image: node:latest
+
+variables:
+  JWT_SECRET: "secret"
+  BASE_URL: "http://localhost:3000"
+  GOOGLE_CLIENT_ID: "fake.apps.googleusercontent.com"
+  GOOGLE_CLIENT_SECRET: "fake"
+
+cache:
+  paths:
+    - app/client/node_modules/
+    - app/server/node_modules/
+
+client_lint:
+  stage: .pre
+  script:
+    - cd app/client
+    - npm install
+    - npm run lint
+
+server_lint:
+  stage: .pre
+  script:
+    - cd app/server
+    - npm install
+    - npm run lint
+
+build_client:
+  stage: build
+  script:
+    - cd app/client
+    - npm install
+    - npm run build
+
+build_server:
+  stage: build
+  script:
+    - cd app/server
+    - npm install
+    - npm run build
+
+test_client:
+  coverage: /All files[^|]*\|[^|]*\s+([\d\.]+)/
+  stage: test
+  script:
+    - cd app/client
+    - npm install
+    - npm run test:coverage
+  cache:
+    paths:
+      - app/client/coverage/
+  artifacts:
+    paths:
+      - app/client/coverage/
+
+test_server:
+  coverage: /All files[^|]*\|[^|]*\s+([\d\.]+)/
+  stage: test
+  script:
+    - cd app/server
+    - npm install
+    - npm run test:coverage
+  cache:
+    paths:
+      - app/server/coverage/
+  artifacts:
+    paths:
+      - app/server/coverage/
+
+pages:
+  stage: deploy
+  dependencies:
+    - test_client
+    - test_server
+  script:
+    - mkdir -p public/client
+    - mkdir -p public/server
+    - cp -r app/client/coverage/* public/client
+    - cp -r app/server/coverage/* public/server
+  artifacts:
+    paths:
+      - public
+  only:
+    - main

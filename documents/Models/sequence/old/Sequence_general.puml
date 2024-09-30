@@ -1,0 +1,150 @@
+@startuml Application
+actor User
+participant "Mobile App" as App
+participant "Backend Server" as Server
+participant "Database" as DB
+participant "Google OAuth" as Google
+
+== Custom Account Registration ==
+User -> App: Choose to Register
+App -> App: Display Registration Form
+User -> App: Submit Registration Info
+App -> Server: Register Account
+Server -> DB: Check Existing User
+alt User Exists
+    DB --> Server: User Exists Error
+    Server --> App: Inform User Exists
+else New User
+    DB --> Server: OK to Register
+    Server -> DB: Create User Account
+    DB --> Server: Account Created
+    Server --> App: Registration Successful
+end
+App -> User: Display Registration Outcome
+
+== Custom Account Login ==
+User -> App: Choose to Login
+App -> App: Display Login Form
+User -> App: Submit Login Credentials
+App -> Server: Authenticate User
+Server -> DB: Verify Credentials
+alt Credentials Valid
+    DB --> Server: Authentication Successful
+    Server --> App: Login Successful
+else Invalid Credentials
+    DB --> Server: Authentication Failed
+    Server --> App: Login Failed
+end
+App -> User: Display Login Outcome
+
+== Google OAuth Login ==
+User -> App: Choose to Login with Google
+App -> Google: Redirect to Google Login
+User -> Google: Enter Google Credentials
+Google --> App: Google Authentication Response
+alt Success
+    App -> Server: Verify Google Token
+    Server -> Google: Validate Token
+    Google --> Server: Token Valid
+    Server -> DB: Link/Update Account with Google ID
+    DB --> Server: Account Linked/Updated
+    Server --> App: Login Successful
+else Failure
+    Server --> App: Login Failed
+end
+App -> User: Display Login Outcome
+
+== Inventory ==
+User -> App: View Inventory
+App -> Server: Request Inventory
+Server -> DB: Query Inventory
+DB --> Server: Inventory Data
+Server --> App: Inventory Data
+App -> App: Display Inventory
+
+group Inventory modification
+    == Add Item ==
+    User -> App: Add Item to Inventory
+    App -> Server: Add Item
+    Server -> DB: Insert Item
+    alt Success
+        DB --> Server: Item Added
+    else Failure
+        DB --> Server: Add Item Failed
+    end
+    Server --> App: Update Result
+
+    == Remove Item ==
+    User -> App: Remove Item from Inventory
+    App -> Server: Remove Item
+    Server -> DB: Delete Item
+    alt Success
+        DB --> Server: Item Removed
+    else Failure
+        DB --> Server: Removal Failed
+    end
+    Server --> App: Update Result
+end
+
+== Recipes ==
+User -> App: View Recipes
+App -> Server: Request Recipes
+Server -> DB: Query Recipes
+DB --> Server: Recipes Data
+Server --> App: Recipes Data
+App -> App: Display Recipes
+
+group Recipe modification
+    == Get Recipe ==
+    User -> App: View Recipe
+    App -> Server: Request Recipe
+    Server -> DB: Query Recipe
+    alt Recipe Found
+        DB --> Server: Recipe Data
+        Server --> App: Recipe Data
+    else Recipe Not Found
+        DB --> Server: Recipe Not Found
+        Server --> App: Recipe Not Found
+    end
+end
+
+== Shopping List ==
+User -> App: View Shopping List
+App -> Server: Request Shopping List
+Server -> DB: Query Shopping List
+DB --> Server: Shopping List Data
+Server --> App: Shopping List Data
+App -> App: Display Shopping List
+
+group Shopping List Modification
+    == Add Item ==
+    User -> App: Add Item to Shopping List
+    App -> Server: Add Item
+    Server -> DB: Insert Item
+    alt Success
+        DB --> Server: Item Added
+    else Failure
+        DB --> Server: Add Item Failed
+    end
+    Server --> App: Update Result
+
+    == Check Item ==
+    User -> App: Mark Item as Acquired
+    App -> Server: Check Off Item
+    Server -> DB: Update Item Status
+    DB --> Server: Item Updated
+    Server --> App: Update Display
+
+    == Remove Item ==
+    User -> App: Remove Item from Shopping List
+    App -> Server: Remove Item
+    Server -> DB: Delete Item
+    alt Success
+        DB --> Server: Item Removed
+    else Failure
+        DB --> Server: Remove Failed
+    end
+    Server --> App: Update Result
+end
+
+@enduml

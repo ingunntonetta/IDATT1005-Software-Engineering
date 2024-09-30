@@ -1,0 +1,49 @@
+@startuml Usercase2
+top to bottom direction
+
+!define Actor(name) rectangle name <<Actor>>
+!define UseCase(name) rectangle name <<UseCase>>
+!define rectangleRound(name) rectangle name
+
+Actor(User)
+UseCase(Create_Shoppinglist_for_Trip)
+
+User --> Create_Shoppinglist_for_Trip : initiates
+
+rectangleRound(Navigate_to_shoppinglist) #LightBlue
+rectangleRound(Enter_Title_and_Description) #LightBlue
+rectangleRound(Generate_Shoppinglist) #LightBlue
+rectangleRound(Add_Items_to_Shoppinglist) #LightBlue
+
+Create_Shoppinglist_for_Trip --> Navigate_to_shoppinglist : <<includes>>\n1. Navigate to shoppinglist
+Create_Shoppinglist_for_Trip --> Enter_Title_and_Description : <<includes>>\n2. Enter Title and Description
+Create_Shoppinglist_for_Trip --> Generate_Shoppinglist : <<includes>>\n3. Generate Shoppinglist
+Create_Shoppinglist_for_Trip --> Add_Items_to_Shoppinglist : <<includes>>\n4. Add Items to Shoppinglist
+
+rectangleRound(shoppinglist_icon_click) #LightGreen
+rectangleRound(plus_button_click) #LightGreen
+rectangleRound(title_entry) #LightGreen
+rectangleRound(description_entry) #LightGreen
+rectangleRound(create_click) #LightGreen
+rectangleRound(click_add_item) #LightGreen
+rectangleRound(search_for_item) #LightGreen
+
+rectangleRound(Error_fetching_shoppinglists) #Pink
+rectangleRound(Cancel_creation_process) #Pink
+rectangleRound(Item_not_exist_error) #Pink
+rectangleRound(Create_new_item) #Pink
+
+Navigate_to_shoppinglist --> shoppinglist_icon_click : <<includes>>\nClick shoppinglist icon
+Enter_Title_and_Description --> plus_button_click : <<includes>>\nClick plus button
+Enter_Title_and_Description --> title_entry : <<includes>>\nEnter Title
+Enter_Title_and_Description --> description_entry : <<includes>>\nEnter Description
+Generate_Shoppinglist --> create_click : <<includes>>\nClick create
+Add_Items_to_Shoppinglist --> click_add_item : <<includes>>\nAdd Items
+
+Navigate_to_shoppinglist <.. Error_fetching_shoppinglists : <<extends>>\n1Error fetching shoppinglists
+Enter_Title_and_Description <.. Cancel_creation_process : <<extends>>\nCancel creation process
+Add_Items_to_Shoppinglist <.. Item_not_exist_error : <<extends>>\nItem does not exist
+Add_Items_to_Shoppinglist --> Create_new_item : <<extends>>\nCreate new item
+Add_Items_to_Shoppinglist <.. search_for_item : <<extends>>\nSearch for item
+
+@enduml

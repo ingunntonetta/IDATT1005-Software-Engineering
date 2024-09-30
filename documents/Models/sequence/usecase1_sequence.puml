@@ -1,0 +1,98 @@
+@startuml Usecase1
+
+' settings
+skinparam responseMessageBelowArrow true
+
+' actors
+actor "User" as user
+boundary "Mobile app" as app
+Entity "Backend Server" as server
+control "Prisma" as prisma
+database "Database" as db
+
+' --------------------------------------------
+
+title Usecase 1: Generate shoppinglist Based on Recipe
+
+
+activate user
+user -> app ++ : open app
+
+' -------------- get recipes --------------
+
+note right of app: Assumes the user\nis already logged in
+user <-- app : display home page
+user -> app : clicks recipe icon
+app -> server ++ : get('api/v1/recipes')
+server -> prisma ++ : findMany(Recipes)
+prisma -> db ++ : generated query
+deactivate prisma
+alt success: Recipes found
+    server <-- db  : recipes
+    app <-- server  : {data: recipes}
+    user <-- app : display recipes
+else error: Error fetching recipes
+    server <-- db -- : error
+    app <-- server -- : {error: "error message"}
+    user <-- app : display error message
+end
+
+' -------------- get recipe --------------
+
+note left of user: Assumes the\nabove part is successful
+user -> app : clicks a recipe
+app -> server ++ : get('api/v1/recipes/:id')
+server -> prisma ++ : findUnique(Recipe)
+prisma -> db ++ : generated query
+deactivate prisma
+alt success: Recipe found
+    server <-- db : recipe
+    app <-- server : {data: recipe}
+    user <-- app : display recipe
+else error: Recipe not found
+    server <-- db -- : error
+    app <-- server -- : {error: "error message"}
+    user <-- app : display error message
+end
+
+' -------------- create shopping list --------------
+
+note left of user: Assumes the\nabove part is successful
+user -> app : clicks "Create shopping list"
+app -> server ++ : post('/api/v1/recipes/${id}/createlist')
+
+server -> prisma ++ : findUnique(Recipe)
+prisma -> db ++ : generated query
+deactivate prisma
+alt success: Recipe found
+    server <-- db : recipe
+else error: Recipe not found
+    server <-- db -- : error
+end
+
+server -> prisma ++ : findMany(fridgeItems)
+prisma -> db ++ : generated query
+deactivate prisma
+alt success: items found
+    server <-- db : items
+else error: Error fetching items
+    server <-- db -- : error
+end
+
+server -> prisma ++ : create(ShoppingList)
+prisma -> db ++ : generated query
+deactivate prisma
+alt success: Shopping list created
+    server <-- db : shopping list
+    app <-- server : {data: shopping list}
+    user <-- app : display shopping list
+else error: Error creating shopping list
+    server <-- db -- : error
+    app <-- server -- : {error: "error message"}
+    user <-- app -- : display error message
+end
+
+
+
+deactivate user
+@enduml

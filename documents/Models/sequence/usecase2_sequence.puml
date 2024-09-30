@@ -1,0 +1,63 @@
+@startuml Usecase2
+
+' settings
+skinparam responseMessageBelowArrow true
+
+' actors
+actor "User" as user
+boundary "Mobile app" as app
+Entity "Backend Server" as server
+control "Prisma" as prisma
+database "Database" as db
+
+' --------------------------------------------
+title Usecase 2: Create ShoppingList
+
+
+activate user
+user -> app ++ : open app
+
+' ' -------------- get shoppinglists --------------
+
+note right of app: Assumes the user\nis already logged in
+user <-- app : display home page
+user -> app : clicks shoppinglist icon
+app -> server ++ : get('api/v1/lists')
+server -> prisma ++ : findMany(ShoppingLists)
+prisma -> db ++ : generated query
+deactivate prisma
+alt success: Shopping lists found
+    server <-- db : shopping lists
+    app <-- server : {data: shopping lists}
+    user <-- app : display shopping lists
+else error: Error fetching shopping lists
+    server <-- db -- : error
+    app <-- server -- : {error: "error message"}
+    user <-- app : display error message
+end
+
+' ' -------------- create shoppinglist --------------
+
+note left of user: Assumes the\nabove part is successful
+user -> app : clicks "plus" icon
+user <-- app : display "enter title" modal
+user -> app : enters title
+user <-- app : ender "description" modal
+user -> app : enters description
+
+app -> server ++ : post('/api/v1/lists/create')
+server -> prisma ++ : create(ShoppingList)
+prisma -> db ++ : generated query
+deactivate prisma
+alt success: Shopping list created
+    server <-- db : shopping list
+    app <-- server : {data: shopping list}
+    user <-- app : display shopping list
+else error: Error creating shopping list
+    server <-- db -- : error
+    app <-- server -- : {error: "error message"}
+    user <-- app -- : display error message
+end
+
+deactivate user
+@enduml

@@ -1,0 +1,33 @@
+volumes:
+  pgdata:
+
+services:
+  postgres:
+    image: postgres
+    environment:
+      POSTGRES_USER: frigo
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: frigo
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U frigo"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  frigo:
+    build: .
+    environment:
+      DATABASE_URL: postgres://frigo:password@postgres:5432/frigo
+      BASE_URL: "http://localhost:3000"
+      JWT_SECRET: "USEALONGANDSAFESECRET"
+      GOOGLE_CLIENT_ID: "YOUR_GOOGLE_CLIENT_ID"
+      GOOGLE_CLIENT_SECRET: "YOUR_GOOGLE_CLIENT_SECRET"
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    links:
+      - postgres

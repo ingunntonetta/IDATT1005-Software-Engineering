@@ -1,0 +1,105 @@
+@startuml ShoppingLists
+actor User
+participant "Mobile App" as App
+participant "Backend Server" as Server
+participant "Database" as DB
+
+==create==
+User -> App: Open App
+App --> User: Display Home page
+User -> App: Click "shopping lists"
+App --> User: Display Shopping Lists
+User -> App: Click "+" button
+App --> User: Open "add title dialog"
+User -> App: Enter title
+User -> App: Click "Next"
+App --> User: Open "add description dialog"
+User -> App: Enter description
+User -> App: Click "Save"
+App -> Server: axios.post(`/api/v1/lists/create`, {...shoppingList})
+alt valid data
+    Server -> Server: generate SQL query
+    Server -> DB: SQL query
+    alt success: 
+        DB --> Server: {shoppingList}
+        Server --> App: {data: shoppingList}
+        App --> User: Display Shopping List
+    else error: 
+        DB --> Server: Error
+        Server --> App: Error(500, "Internal Server Error")
+    end
+else invalid data
+    App --> User: Errror(400, "Invalid data")
+end 
+
+
+==add Item==
+User -> App: Open shopping list
+App --> User: Display Shopping List
+User -> App: "add item"
+User -> App: Search item
+
+alt exists
+    App --> User: Display item
+    User -> App: Click "add"
+else not exists
+    App --> User: Display "item not found"
+    User -> App: Click "create"
+    App -> Server: axios.post('/api/v1/items/', { name })
+    Server -> Server: generate SQL query
+    Server -> DB: SQL query
+    DB --> Server: {item}
+    Server --> App: {data: item}
+end
+App -> Server: axios.post(`/api/v1/lists/${listId}/add`, { itemId})
+Server -> Server: generate SQL query
+Server -> DB: SQL query
+DB --> Server: {item}
+Server --> App: {data: item}
+App --> User: item added
+
+==purchase item==
+User -> App: click "checkbox"
+App -> Server: axios.put(`/api/v1/lists/${shoppingListId}/update`, { itemId })
+    Server -> Server: generate SQL query
+    Server -> DB: SQL query
+    DB --> Server: {item}
+    Server --> App: {data: item}
+alt checked
+    App --> User: item purchased
+else not checked
+    App --> User: item removed from purchased
+end
+
+==delete item==
+User -> App: click "trash" next to item
+App -> Server: axios.delete(`/api/v1/lists/${shoppingListId}/remove`, { itemId})
+Server -> Server: generate SQL query
+Server -> DB: SQL query
+DB --> Server: {item}
+Server --> App: {data: item}
+App --> User: item removed
+
+==arhcive list==
+User -> App: click "archive"
+App -> Server: axios.put(`/api/v1/lists/${shoppingListId}/archive`)
+Server -> Server: generate SQL query to add purched items to archive
+Server -> Server: generate SQL query to check if list is archived
+Server -> DB: SQL query
+DB --> Server: {isArchived}
+Server -> Server: generate SQL query
+Server -> DB: SQL query to archive / unarchive list
+DB --> Server: {shoppingList}
+Server --> App: {data: shoppingList}
+App -> App: redirect to shopping lists
+App --> User: shopping list archived
+
+==delete list==
+User -> App: click "trash"
+App -> Server: .delete(`/api/v1/lists/${id}`)
+Server -> Server: generate SQL query
+Server -> DB: SQL query
+DB --> Server: {shoppingList}
+Server --> App: {data: deletedList}
+
+@enduml

@@ -1,0 +1,37 @@
+@startuml Usercase1
+top to bottom direction
+
+!define Actor(name) rectangle name <<Actor>>
+!define UseCase(name) rectangle name <<UseCase>>
+!define rectangleRound(name) rectangle name
+
+Actor(User)
+UseCase(Generate_Shoppinglist_based_on_Recipe)
+
+User --> Generate_Shoppinglist_based_on_Recipe : initiates
+
+rectangleRound(Navigate_to_recipes) #LightBlue
+rectangleRound(Find_Recipe) #LightBlue
+rectangleRound(Generate_Shoppinglist) #LightBlue
+
+Generate_Shoppinglist_based_on_Recipe --> Navigate_to_recipes : <<includes>>\n1. Navigate to recipes
+Generate_Shoppinglist_based_on_Recipe --> Find_Recipe : <<includes>>\n2. Find Recipe
+Generate_Shoppinglist_based_on_Recipe --> Generate_Shoppinglist : <<includes>>3. Generate Shoppinglist
+
+rectangleRound(click_recipe_icon) #LightGreen
+rectangleRound(search_recipe_name) #LightGreen
+rectangleRound(select_recipe) #LightGreen
+
+rectangleRound(Error_fetching_recipes) #Pink
+rectangleRound(No_matching_recipes) #Pink
+rectangleRound(No_missing_items) #Pink
+
+Navigate_to_recipes --> click_recipe_icon : <<includes>>\nClick recipe icon
+Find_Recipe <.. search_recipe_name : <<extends>>\nSearch recipe name
+select_recipe --> Find_Recipe : <<includes>>\nSelect recipe
+
+Navigate_to_recipes <.. Error_fetching_recipes : <<extends>>\nError fetching recipes
+Find_Recipe <.. No_matching_recipes : <<extends>>\nNo matching recipes
+Generate_Shoppinglist <.. No_missing_items : <<extends>>\nNo missing items
+
+@enduml

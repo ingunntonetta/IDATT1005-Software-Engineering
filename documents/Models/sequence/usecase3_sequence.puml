@@ -1,0 +1,77 @@
+@startuml Usecase3
+
+' settings
+skinparam responseMessageBelowArrow true
+
+' actors
+actor "User" as user
+boundary "Mobile app" as app
+Entity "Backend Server" as server
+control "Prisma" as prisma
+database "Database" as db
+actor "Google OAuth" as google
+
+' --------------------------------------------
+title Usecase 2: Register an account
+
+== Google Oath registation ==
+
+activate user
+user -> app ++ : open app
+user <-- app : display login page
+user -> app : clicks "login with google"
+app -> google ++ : redirect to google
+google -> user : Request credentials
+google <-- user : Provide credentials
+google -> server -- : POST('/api/v1/auth/google/login')
+activate server
+server -> prisma ++ : findUnique(User)
+prisma -> db ++ : generated query
+deactivate prisma
+alt success: User found
+    server <-- db : user
+    app <-- server : {data: user, Cookie: "token}
+    user <-- app : display home page
+else error: User not found
+    server <-- db -- : error
+    server -> prisma ++ : create(User)
+    prisma -> db ++ : generated query
+    deactivate prisma
+    server <-- db -- : user
+    app <-- server -- : {data: user, Cookie: "token}
+    user <-- app -- : display home page
+end
+
+
+== Custom registration ==
+
+
+user -> app ++ : open app
+user <-- app : display login page
+user -> app : clicks "register"
+app <-- user : display register page
+user -> app : enters credentials
+alt valid credentials
+    user <-- app : valid credentials
+else invalid credentials
+    user <-- app : toast("Invalid credentials")
+end
+
+user -> app : clicks "register"
+app -> server ++ : POST('/api/v1/auth/register')
+server -> prisma ++ : create(User)
+prisma -> db ++ : generated query
+deactivate prisma
+alt success: User created
+    server <-- db : user
+    app <-- server : {data: User, Cookie: "token"}
+    user <-- app : display home page
+else error: Error creating user
+    server <-- db -- : error
+    app <-- server -- : {error: "error message"}
+    user <-- app -- : display error message
+end
+
+deactivate user
+
+@enduml

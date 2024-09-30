@@ -1,0 +1,53 @@
+@startuml Authenticaiton
+actor User
+participant "Mobile App" as App
+participant "Backend Server" as Server
+participant "Database" as DB
+participant "Google OAuth" as Google
+
+== Custom Account Registration ==
+User -> App: Choose to Register
+App -> App: Display Registration Form
+User -> App: Submit Registration Info
+App -> Server: axios.post("/api/v1/auth/register", { ...user })
+Server -> Server: Generate SQL Query
+Server -> DB: Execute SQL Query
+alt User Exists
+    DB --> Server: User Exists Error
+    Server --> App: Error({status: 400, message: "User Exists"})
+else New User
+    DB --> Server: Account Created
+    Server --> App: Cookie(newUser.id)
+    App -> App: Redirect to Home
+end
+App -> User: Display Registration Outcome
+
+== Google Account Login ==
+User -> App: Login with Google
+App -> Server: Get("api/v1/auth/google/login")
+User -> Google: { username, password }
+alt Authentication Successful
+    Google --> Server: { id_token }
+    Server --> App: { access_token }
+else Authentication Failed
+    DB --> Server: { error: invalid credentials }
+    Server --> App: { error: invalid credentials }
+end
+App -> User: Display Registration Outcome
+
+==Custom Account Login==
+User -> App: Choose to login
+App -> App: Display Login Form
+User -> App: Submit Login Info
+App -> Server: axios.post("/api/v1/auth/login", { ...user })
+Server -> DB: Validate({ ...user })
+alt Authentication Successful
+    DB --> Server: { success: true }
+    Server --> App: { access_token }
+else Authentication Failed
+    DB --> Server: { error: invalid credentials }
+    Server --> App: { error: invalid credentials }
+end
+App -> User: Display Login Outcome
+
+@enduml

@@ -1,0 +1,53 @@
+@startuml Usercase3
+top to bottom direction
+
+!define Actor(name) rectangle name <<Actor>>
+!define UseCase(name) rectangle name <<UseCase>>
+!define rectangleRound(name) rectangle name
+
+Actor(User)
+UseCase(Register_Account_With_Oauth)
+UseCase(Register_Account_With_Custom_Registration)
+
+User --> Register_Account_With_Oauth : initiates OAuth registration
+User --> Register_Account_With_Custom_Registration : initiates custom registration
+
+rectangleRound(Navigate_to_Oauth) #LightBlue
+rectangleRound(Authenticate_Credentials) #LightBlue
+rectangleRound(Navigate_to_Custom_Registration) #LightBlue
+rectangleRound(Enter_Credentials) #LightBlue
+
+Register_Account_With_Oauth --> Navigate_to_Oauth : <<includes>>\n1. Navigate to Oauth
+Register_Account_With_Oauth --> Authenticate_Credentials : <<includes>>\n2. Authenticate credentials
+
+Register_Account_With_Custom_Registration --> Navigate_to_Custom_Registration : <<includes>>\n1. Navigate to custom registration
+Register_Account_With_Custom_Registration --> Enter_Credentials : <<includes>>\n2. Enter credentials
+
+rectangleRound(log_in_with_google) #LightGreen
+rectangleRound(google_login_page) #LightGreen
+rectangleRound(enter_credentials) #LightGreen
+
+rectangleRound(click_register) #LightGreen
+rectangleRound(registration_page) #LightGreen
+rectangleRound(enter_all_credentials) #LightGreen
+rectangleRound(custom_authentication) #LightGreen
+
+rectangleRound(Error_loading_google_services) #Pink
+rectangleRound(Invalid_credentials) #Pink
+rectangleRound(Error_fetching_pages) #Pink
+rectangleRound(User_cancels_creation_process) #Pink
+
+Navigate_to_Oauth --> log_in_with_google : <<includes>>\nClick log in with Google
+Navigate_to_Oauth <.. Error_loading_google_services : <<extends>>\nError loading Google services
+Authenticate_Credentials --> google_login_page : <<includes>>\nGoogle login page
+Authenticate_Credentials --> enter_credentials : <<includes>>\nEnter credentials and login
+Authenticate_Credentials <.. Invalid_credentials : <<extends>>\nInvalid credentials
+
+Navigate_to_Custom_Registration --> click_register : <<includes>>\nClick register
+Navigate_to_Custom_Registration --> registration_page : <<includes>>\nNavigate to registration page
+Error_fetching_pages <.. Navigate_to_Custom_Registration : <<extends>>\n1Error fetching pages
+Enter_Credentials --> enter_all_credentials : <<includes>>\nEnter credentials
+Enter_Credentials --> custom_authentication : <<includes>>\nSystem validates and creates account
+Enter_Credentials <.. User_cancels_creation_process : <<extends>>\nUser cancels registration
+
+@enduml
